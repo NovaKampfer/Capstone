@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.MatthewBaerg.multitasked.ui.tasks.TaskMergeSorterTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-16T07:46:51.139Z" hostname="local-validation" time="0.028">
+  <properties/>
+  <testcase name="comparisonCountStaysWithinNLogNBound" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskMergeSorterTest" time="0.004"/>
+  <testcase name="randomizedResultsMatchIndependentStandardSort" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskMergeSorterTest" time="0.019"/>
+  <testcase name="emptyInputProducesEmptyOutput" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskMergeSorterTest" time="0.0"/>
+  <testcase name="cancellationStopsWork" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskMergeSorterTest" time="0.001"/>
+  <testcase name="equalKeysRemainStableAcrossMergeBoundaries" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskMergeSorterTest" time="0.002"/>
+  <testcase name="reverseSortedWithDuplicates" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskMergeSorterTest" time="0.0"/>
+  <testcase name="singleItem" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskMergeSorterTest" time="0.0"/>
+  <testcase name="inputIsNotReordered" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskMergeSorterTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

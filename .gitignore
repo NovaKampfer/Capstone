@@ -1,0 +1,11 @@
+**/google-services.json
+**/local.properties
+**/.gradle/
+**/.idea/
+**/.kotlin/
+**/build/
+**/node_modules/
+**/*.jks
+**/*.keystore
+**/*.db
+**/__pycache__/

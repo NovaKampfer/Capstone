@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.MatthewBaerg.multitasked.ui.tasks.TaskUrgencyTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-16T07:46:51.186Z" hostname="local-validation" time="0.004">
+  <properties/>
+  <testcase name="overdueBeforeUpcomingRegardlessOfPriority" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskUrgencyTest" time="0.001"/>
+  <testcase name="dueDateTiesUsePriorityButExactTiesRemainStable" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskUrgencyTest" time="0.0"/>
+  <testcase name="urgencyComparatorIsAntisymmetricAndTransitive" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskUrgencyTest" time="0.002"/>
+  <testcase name="equalPriorityUsesDateThenCreationThenId" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskUrgencyTest" time="0.0"/>
+  <testcase name="priorityIsUsedWithinSameOverdueGroup" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskUrgencyTest" time="0.001"/>
+  <testcase name="incompleteBeforeCompletedEvenIfCompletedIsOverdue" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskUrgencyTest" time="0.0"/>
+  <testcase name="exactlyNowIsNotOverdue" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskUrgencyTest" time="0.0"/>
+  <testcase name="extremeDatesAndNullAreComparedWithoutOverflow" classname="com.MatthewBaerg.multitasked.ui.tasks.TaskUrgencyTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

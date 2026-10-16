@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="com.MatthewBaerg.multitasked.ExampleInstrumentedTest" tests="11" failures="0" errors="0" skipped="0" time="0.863" timestamp="2026-10-16T07:49:42" hostname="localhost">
+  <properties>
+    <property name="device" value="Medium_Phone(AVD) - 16" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="useAppContext" classname="com.MatthewBaerg.multitasked.ExampleInstrumentedTest" time="0.008" />
+  <testcase name="repositoryRejectsInvalidInputWithoutWriting" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.007" />
+  <testcase name="sqlLookingInputIsStoredAsText" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.003" />
+  <testcase name="deletingBoardCascadesOnlyItsTasks" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.029" />
+  <testcase name="fileDatabaseSurvivesCloseAndReopen" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.029" />
+  <testcase name="migrationPreservesVersionOneRowsAndAddsDefaults" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.053" />
+  <testcase name="duplicateBoardDoesNotReplaceOrDeleteChildren" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.029" />
+  <testcase name="orphanTaskIsRejected" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.003" />
+  <testcase name="wrongBoardCannotReadOrChangeTask" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.002" />
+  <testcase name="boardAndTaskCrudAndCounts" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.028" />
+  <testcase name="failedMultiInsertRollsBackBoardAndTasks" classname="com.MatthewBaerg.multitasked.data.local.LocalDatabaseTest" time="0.002" />
+</testsuite>

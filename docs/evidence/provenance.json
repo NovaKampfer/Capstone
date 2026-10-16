@@ -1,0 +1,135 @@
+{
+  "source_files": [
+    {
+      "filename": "CS499_Milestone_Two_Enhancement_Narrative_Matthew_Baerg (1).docx",
+      "bytes": 43376,
+      "sha256": "5ead7f7aa703382960dff67171f966c7a92f3b2854e5636591a4599cc2aea136"
+    },
+    {
+      "filename": "CS499_Milestone_Two_Enhancement_Narrative_Matthew_Baerg.docx",
+      "bytes": 43362,
+      "sha256": "d39655e91cc7a65c45d76b5ac212a6d3600750bc823922839a58f0241eb9c9b5"
+    },
+    {
+      "filename": "MultiTasked_Milestone_Four_Code_Matthew_Baerg.zip",
+      "bytes": 1155937,
+      "sha256": "44cf2dd8070e0aeb917a595785ac52603e866e8d819571a87b1d315292d59e26"
+    },
+    {
+      "filename": "MultiTasked_Milestone_Four_Narrative_Matthew_Baerg.docx",
+      "bytes": 40800,
+      "sha256": "2ae84e5325550d20b33a5f1ffdbd02e8bb989cb4e3c55732cef99f00f7061df1"
+    },
+    {
+      "filename": "MultiTasked_Milestone_Three_Code_Matthew_Baerg (1).zip",
+      "bytes": 1119097,
+      "sha256": "2f0d30876daf1b0be75880155a4b29777fdf2cd455ba68cd0a1740398a34c212"
+    },
+    {
+      "filename": "MultiTasked_Milestone_Three_Code_Matthew_Baerg.zip",
+      "bytes": 1119097,
+      "sha256": "2f0d30876daf1b0be75880155a4b29777fdf2cd455ba68cd0a1740398a34c212"
+    },
+    {
+      "filename": "MultiTasked_Milestone_Three_Narrative_Matthew_Baerg (1).docx",
+      "bytes": 41609,
+      "sha256": "7b43e8b001de6e0b9789e9cccffa926f39b3b5f96a7407d2385bf8a4309235e6"
+    },
+    {
+      "filename": "MultiTasked_Milestone_Three_Narrative_Matthew_Baerg.docx",
+      "bytes": 41609,
+      "sha256": "7b43e8b001de6e0b9789e9cccffa926f39b3b5f96a7407d2385bf8a4309235e6"
+    },
+    {
+      "filename": "MultiTasked_Milestone_Two_Code_Matthew_Baerg (1).zip",
+      "bytes": 712345,
+      "sha256": "139ff47c637deeeb76cc6b4476549d22cf5b9a13e1526133909b1fe7b15fe3c5"
+    },
+    {
+      "filename": "MultiTasked_Milestone_Two_Code_Matthew_Baerg (2).zip",
+      "bytes": 712345,
+      "sha256": "139ff47c637deeeb76cc6b4476549d22cf5b9a13e1526133909b1fe7b15fe3c5"
+    },
+    {
+      "filename": "MultiTasked_Milestone_Two_Code_Matthew_Baerg.zip",
+      "bytes": 712345,
+      "sha256": "139ff47c637deeeb76cc6b4476549d22cf5b9a13e1526133909b1fe7b15fe3c5"
+    }
+  ],
+  "baseline_comparisons": [
+    {
+      "comparison": "Original across milestones",
+      "identical": true,
+      "differences": []
+    },
+    {
+      "comparison": "Milestone Two baseline",
+      "identical": true,
+      "differences": []
+    },
+    {
+      "comparison": "Milestone Three baseline",
+      "identical": true,
+      "differences": []
+    }
+  ],
+  "publication_exclusions": [
+    {
+      "publication": "artifacts/milestone-two",
+      "path": "Enhanced/app/google-services.json",
+      "reason": "Private configuration or generated/runtime data"
+    },
+    {
+      "publication": "artifacts/milestone-two",
+      "path": "Original/app/google-services.json",
+      "reason": "Private configuration or generated/runtime data"
+    },
+    {
+      "publication": "artifacts/milestone-three",
+      "path": "Enhanced/app/google-services.json",
+      "reason": "Private configuration or generated/runtime data"
+    },
+    {
+      "publication": "artifacts/milestone-three",
+      "path": "Milestone_Two_Baseline/app/google-services.json",
+      "reason": "Private configuration or generated/runtime data"
+    },
+    {
+      "publication": "artifacts/milestone-three",
+      "path": "Original/app/google-services.json",
+      "reason": "Private configuration or generated/runtime data"
+    },
+    {
+      "publication": "artifacts/milestone-four",
+      "path": "Enhanced/app/google-services.json",
+      "reason": "Private configuration or generated/runtime data"
+    },
+    {
+      "publication": "artifacts/milestone-four",
+      "path": "Milestone_Three_Baseline/app/google-services.json",
+      "reason": "Private configuration or generated/runtime data"
+    },
+    {
+      "publication": "artifacts/milestone-four",
+      "path": "Original/app/google-services.json",
+      "reason": "Private configuration or generated/runtime data"
+    },
+    {
+      "publication": "artifacts/final",
+      "path": "app/google-services.json",
+      "reason": "Private configuration or generated/runtime data"
+    }
+  ],
+  "narrative_selection": {
+    "software_design": "Supplied (1) revision selected: it adds the author-reported Android Studio build and test result. The unnumbered copy retains the earlier blocked-build paragraph. September 21, 2026 revision identification comes from the user; DOCX metadata has a default 2013 date and is not used as evidence of preparation date.",
+    "algorithms": "Prepared September 27, 2026, stated in document; duplicate files match SHA-256.",
+    "databases": "Prepared October 6, 2026, stated in document."
+  },
+  "final_changes": [
+    "Use worker Thread identity instead of exact thread-name text in TaskSortingServiceTest; coroutine debug mode decorates names.",
+    "Replace two deprecated Divider calls with HorizontalDivider in BoardsScreen.",
+    "Retain generated Room schema version 2 from successful annotation processing.",
+    "Correct the starter instrumentation test package-name expectation to the actual application ID."
+  ],
+  "release_version": "No new release number assigned; supplied Android versionCode/versionName are preserved."
+}

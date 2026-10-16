@@ -1,0 +1,5 @@
+artifacts/** -text
+docs/downloads/** -text
+*.html text eol=lf
+*.css text eol=lf
+*.yml text eol=lf

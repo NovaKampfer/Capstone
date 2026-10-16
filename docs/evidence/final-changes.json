@@ -1,0 +1,22 @@
+[
+  {
+    "file": "PUBLICATION.md",
+    "change": "added"
+  },
+  {
+    "file": "app/schemas/com.MatthewBaerg.multitasked.data.local.AppDatabase/2.json",
+    "change": "added"
+  },
+  {
+    "file": "app/src/androidTest/java/com/MatthewBaerg/multitasked/ExampleInstrumentedTest.kt",
+    "change": "modified"
+  },
+  {
+    "file": "app/src/main/java/com/MatthewBaerg/multitasked/ui/boards/BoardsScreen.kt",
+    "change": "modified"
+  },
+  {
+    "file": "app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingServiceTest.kt",
+    "change": "modified"
+  }
+]

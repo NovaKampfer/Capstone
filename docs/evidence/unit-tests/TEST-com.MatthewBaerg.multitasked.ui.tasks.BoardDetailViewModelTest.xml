@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.MatthewBaerg.multitasked.ui.tasks.BoardDetailViewModelTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-16T07:46:51.069Z" hostname="local-validation" time="0.068">
+  <properties/>
+  <testcase name="repositoryFailure_exposesSafeMessageAndLogsOnlyErrorType" classname="com.MatthewBaerg.multitasked.ui.tasks.BoardDetailViewModelTest" time="0.035"/>
+  <testcase name="selectingDueDate_updatesSortLabelAndTasks" classname="com.MatthewBaerg.multitasked.ui.tasks.BoardDetailViewModelTest" time="0.01"/>
+  <testcase name="negativePrice_isRejectedBeforeCallingRepository" classname="com.MatthewBaerg.multitasked.ui.tasks.BoardDetailViewModelTest" time="0.008"/>
+  <testcase name="addTask_trimsTitleBeforeCallingRepository" classname="com.MatthewBaerg.multitasked.ui.tasks.BoardDetailViewModelTest" time="0.005"/>
+  <testcase name="urgencyReordersAfterRepositoryEmitsAnEditedTask" classname="com.MatthewBaerg.multitasked.ui.tasks.BoardDetailViewModelTest" time="0.005"/>
+  <testcase name="recentTasks_areOrderedByCreationTime" classname="com.MatthewBaerg.multitasked.ui.tasks.BoardDetailViewModelTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,911 @@
+diff -ruN Milestone_Two_Baseline/MILESTONE_THREE_README.md Enhanced/MILESTONE_THREE_README.md
+--- Milestone_Two_Baseline/MILESTONE_THREE_README.md	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/MILESTONE_THREE_README.md	2026-09-27 16:14:09.000669356 -0700
+@@ -0,0 +1,9 @@
++# Milestone Three enhancement
++
++This is the current enhanced project. Open this directory in Android Studio.
++
++The package-level `README.md`, `LEARNING_GUIDE.md`, and `Evidence/VALIDATION.md` document the new algorithms, changes, and verification limits. `MILESTONE_TWO_README.md` is retained as historical documentation; it does not describe the new sorting features.
++
++New options in the task sorting menu are **Due date** and **Urgency**. Both use custom algorithms selected by `TaskSortPolicy` and run through `TaskSortingService` on an injected background dispatcher. The existing Firebase data layer is unchanged.
++
++Run `./gradlew assembleDebug testDebugUnitTest` on a configured Android development machine (Windows: `.\gradlew.bat assembleDebug testDebugUnitTest`). The complete Android build has not been verified in the preparation environment. The standalone algorithm/coroutine test results are included at the package root.
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/di/AppModule.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/di/AppModule.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/di/AppModule.kt	2026-09-20 17:39:40.000000000 -0700
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/di/AppModule.kt	2026-09-27 16:02:46.677154588 -0700
+@@ -15,12 +15,22 @@
+ import dagger.hilt.android.qualifiers.ApplicationContext
+ import dagger.hilt.components.SingletonComponent
+ import javax.inject.Singleton
++import kotlinx.coroutines.CoroutineDispatcher
++import kotlinx.coroutines.Dispatchers
++import com.MatthewBaerg.multitasked.ui.tasks.TaskClock
+ 
+ @Module
+ @InstallIn(SingletonComponent::class)
+ object AppModule {
+ 
+     @Provides
++    @SortingDispatcher
++    fun provideSortingDispatcher(): CoroutineDispatcher = Dispatchers.Default
++
++    @Provides
++    fun provideTaskClock(): TaskClock = TaskClock { System.currentTimeMillis() }
++
++    @Provides
+     @Singleton
+     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+ 
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/di/SortingDispatcher.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/di/SortingDispatcher.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/di/SortingDispatcher.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/di/SortingDispatcher.kt	2026-09-27 16:02:44.873166404 -0700
+@@ -0,0 +1,8 @@
++package com.MatthewBaerg.multitasked.di
++
++import javax.inject.Qualifier
++
++/** Distinguishes CPU-bound sorting work from any future I/O dispatcher. */
++@Qualifier
++@Retention(AnnotationRetention.BINARY)
++annotation class SortingDispatcher
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailContract.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailContract.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailContract.kt	2026-09-20 17:39:26.000000000 -0700
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailContract.kt	2026-09-27 16:02:45.569161845 -0700
+@@ -10,7 +10,9 @@
+     ALPHA_ASC,
+     ALPHA_DESC,
+     COMPLETED_FIRST,
+-    INCOMPLETE_FIRST
++    INCOMPLETE_FIRST,
++    DUE_DATE,
++    URGENCY
+ }
+ 
+ data class BoardDetailUiState(
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailScreen.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailScreen.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailScreen.kt	2026-09-20 17:46:14.000000000 -0700
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailScreen.kt	2026-09-27 16:02:47.125151653 -0700
+@@ -371,4 +371,6 @@
+         TaskSortOption.ALPHA_DESC -> "Z to A"
+         TaskSortOption.COMPLETED_FIRST -> "Completed first"
+         TaskSortOption.INCOMPLETE_FIRST -> "Incomplete first"
++        TaskSortOption.DUE_DATE -> "Due date"
++        TaskSortOption.URGENCY -> "Urgency"
+     }
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModel.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModel.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModel.kt	2026-09-20 17:40:56.000000000 -0700
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModel.kt	2026-09-27 16:02:46.325156891 -0700
+@@ -26,7 +26,8 @@
+ class BoardDetailViewModel @Inject constructor(
+     private val repository: BoardRepository,
+     private val celebrationSettings: CelebrationSettings,
+-    savedStateHandle: SavedStateHandle
++    savedStateHandle: SavedStateHandle,
++    private val taskSortingService: TaskSortingService
+ ) : ViewModel() {
+ 
+     private val boardId: String = checkNotNull(savedStateHandle["boardId"])
+@@ -39,16 +40,15 @@
+     val uiState: StateFlow<BoardDetailUiState> = _retryTrigger.flatMapLatest {
+         combine(
+             repository.getBoard(boardId),
+-            repository.getTasks(boardId),
++            taskSortingService.observe(repository.getTasks(boardId), _sortOption),
+             repository.getBoardMembers(boardId),
+-            _sortOption,
+             _showCelebration
+-        ) { board, tasks, members, sortOption, showCelebration ->
++        ) { board, sorted, members, showCelebration ->
+             BoardDetailUiState(
+                 board = board,
+-                tasks = TaskSortPolicy.sort(tasks, sortOption),
++                tasks = sorted.tasks,
+                 boardMembers = members,
+-                sortOption = sortOption,
++                sortOption = sorted.option,
+                 showCelebration = showCelebration
+             )
+         }.catch {
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskClock.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskClock.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskClock.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskClock.kt	2026-09-27 16:02:44.541168535 -0700
+@@ -0,0 +1,6 @@
++package com.MatthewBaerg.multitasked.ui.tasks
++
++/** Inject a fixed clock in tests; production uses System.currentTimeMillis. */
++fun interface TaskClock {
++    fun nowMillis(): Long
++}
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorter.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorter.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorter.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorter.kt	2026-09-27 16:02:44.201170706 -0700
+@@ -0,0 +1,54 @@
++package com.MatthewBaerg.multitasked.ui.tasks
++
++/**
++ * Stable top-down merge sort. Never reorders the caller's list.
++ * O(n log n) time, O(n) auxiliary space plus O(log n) call stack.
++ * checkActive lets the caller cooperate with cancellation without Android dependencies.
++ */
++internal object TaskMergeSorter {
++    fun <T> sort(
++        input: List<T>,
++        comparator: Comparator<T>,
++        checkActive: () -> Unit = {}
++    ): List<T> {
++        checkActive()
++        val values = ArrayList<T>(input.size)
++        for (item in input) {
++            checkActive()
++            values.add(item)
++        }
++        if (values.size < 2) return values
++        val buffer = ArrayList<T>(values.size)
++        for (item in values) {
++            checkActive()
++            buffer.add(item)
++        }
++
++        // Half-open range [start, end): end is not included.
++        fun sortRange(start: Int, end: Int) {
++            checkActive()
++            if (end - start < 2) return
++            val middle = start + (end - start) / 2
++            sortRange(start, middle)
++            sortRange(middle, end)
++            var left = start
++            var right = middle
++            for (destination in start until end) {
++                checkActive()
++                // Choosing LEFT on equality is the stability guarantee.
++                buffer[destination] = when {
++                    left >= middle -> values[right++]
++                    right >= end -> values[left++]
++                    comparator.compare(values[left], values[right]) <= 0 -> values[left++]
++                    else -> values[right++]
++                }
++            }
++            for (index in start until end) {
++                checkActive()
++                values[index] = buffer[index]
++            }
++        }
++        sortRange(0, values.size)
++        return values
++    }
++}
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueue.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueue.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueue.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueue.kt	2026-09-27 16:02:43.865172847 -0700
+@@ -0,0 +1,62 @@
++package com.MatthewBaerg.multitasked.ui.tasks
++
++import com.MatthewBaerg.multitasked.data.model.TaskItem
++
++/**
++ * Array-backed min-heap: a parent never compares greater than either child.
++ * peek O(1), poll O(log n), offer O(log n) amortized (ArrayList may grow).
++ * Storage O(n). This queue is confined to one sort, never shared between threads.
++ * The comparator must stay constant while the queue contains tasks.
++ */
++internal class TaskPriorityQueue(private val comparator: Comparator<TaskItem>) {
++    private val heap = ArrayList<TaskItem>()
++    val size: Int get() = heap.size
++    fun isEmpty(): Boolean = heap.isEmpty()
++
++    // Copy on entry/exit because the legacy model has mutable isDone and createdAt fields.
++    fun peek(): TaskItem? = heap.firstOrNull()?.copy()
++
++    fun offer(task: TaskItem) {
++        heap.add(task.copy())
++        var child = heap.lastIndex
++        while (child > 0) {
++            val parent = (child - 1) / 2
++            if (comparator.compare(heap[parent], heap[child]) <= 0) break
++            swap(parent, child)
++            child = parent
++        }
++    }
++
++    fun poll(): TaskItem? {
++        if (heap.isEmpty()) return null
++        val first = heap[0]
++        val last = heap.removeAt(heap.lastIndex)
++        if (heap.isNotEmpty()) {
++            heap[0] = last
++            siftDown()
++        }
++        return first.copy()
++    }
++
++    private fun siftDown() {
++        var parent = 0
++        // Only the first size / 2 nodes have children. This also avoids index overflow.
++        while (parent < heap.size / 2) {
++            val left = 2 * parent + 1
++            val right = left + 1
++            var best = left
++            if (right < heap.size && comparator.compare(heap[right], heap[left]) < 0) {
++                best = right
++            }
++            if (comparator.compare(heap[parent], heap[best]) <= 0) break
++            swap(parent, best)
++            parent = best
++        }
++    }
++
++    private fun swap(first: Int, second: Int) {
++        val saved = heap[first]
++        heap[first] = heap[second]
++        heap[second] = saved
++    }
++}
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortPolicy.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortPolicy.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortPolicy.kt	2026-09-20 17:39:26.000000000 -0700
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortPolicy.kt	2026-09-27 16:02:45.917159565 -0700
+@@ -4,45 +4,66 @@
+ import java.util.Locale
+ 
+ /**
+- * Defines the existing screen-level sort choices in one testable location.
+- * The custom priority algorithm planned for the next milestone will replace
+- * or extend this policy without adding business logic to the composable.
++ * Chooses an algorithm without placing business logic inside a composable.
++ * Existing sort meanings are preserved; new modes use custom implementations.
+  */
+ internal object TaskSortPolicy {
+-    fun sort(tasks: List<TaskItem>, option: TaskSortOption): List<TaskItem> =
+-        when (option) {
++    fun sort(
++        tasks: List<TaskItem>,
++        option: TaskSortOption,
++        nowMillis: Long = System.currentTimeMillis(),
++        checkActive: () -> Unit = {}
++    ): List<TaskItem> {
++        checkActive()
++        if (option == TaskSortOption.DUE_DATE) {
++            return TaskMergeSorter.sort(tasks, TaskUrgency.dueDateComparator, checkActive)
++        }
++        if (option == TaskSortOption.URGENCY) {
++            val ordering = TaskUrgency.comparator(nowMillis)
++            val queue = TaskPriorityQueue(Comparator { left, right ->
++                checkActive()
++                ordering.compare(left, right)
++            })
++            for (task in tasks) {
++                checkActive()
++                queue.offer(task)
++            }
++            val result = ArrayList<TaskItem>(tasks.size)
++            while (!queue.isEmpty()) {
++                checkActive()
++                result.add(checkNotNull(queue.poll()))
++            }
++            return result
++        }
++        val comparator = when (option) {
+             TaskSortOption.RECENT ->
+-                tasks.sortedWith(
+                     compareByDescending<TaskItem> { it.createdAt }
+                         .thenBy { it.id }
+-                )
+ 
+             TaskSortOption.ALPHA_ASC ->
+-                tasks.sortedWith(
+                     compareBy<TaskItem> { it.title.lowercase(Locale.ROOT) }
+                         .thenByDescending { it.createdAt }
+                         .thenBy { it.id }
+-                )
+ 
+             TaskSortOption.ALPHA_DESC ->
+-                tasks.sortedWith(
+                     compareByDescending<TaskItem> { it.title.lowercase(Locale.ROOT) }
+                         .thenByDescending { it.createdAt }
+                         .thenBy { it.id }
+-                )
+ 
+             TaskSortOption.COMPLETED_FIRST ->
+-                tasks.sortedWith(
+                     compareByDescending<TaskItem> { it.isDone }
+                         .thenBy { it.title.lowercase(Locale.ROOT) }
+                         .thenBy { it.id }
+-                )
+ 
+             TaskSortOption.INCOMPLETE_FIRST ->
+-                tasks.sortedWith(
+                     compareBy<TaskItem> { it.isDone }
+                         .thenBy { it.title.lowercase(Locale.ROOT) }
+                         .thenBy { it.id }
+-                )
++            TaskSortOption.DUE_DATE, TaskSortOption.URGENCY -> error("Handled above")
+         }
++        return tasks.sortedWith(Comparator { left, right ->
++            checkActive()
++            comparator.compare(left, right)
++        })
++    }
+ }
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingService.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingService.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingService.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingService.kt	2026-09-27 16:02:45.213164177 -0700
+@@ -0,0 +1,61 @@
++package com.MatthewBaerg.multitasked.ui.tasks
++
++import com.MatthewBaerg.multitasked.data.model.TaskItem
++import com.MatthewBaerg.multitasked.di.SortingDispatcher
++import javax.inject.Inject
++import kotlinx.coroutines.CoroutineDispatcher
++import kotlinx.coroutines.ExperimentalCoroutinesApi
++import kotlinx.coroutines.currentCoroutineContext
++import kotlinx.coroutines.delay
++import kotlinx.coroutines.ensureActive
++import kotlinx.coroutines.flow.Flow
++import kotlinx.coroutines.flow.combine
++import kotlinx.coroutines.flow.flatMapLatest
++import kotlinx.coroutines.flow.flow
++import kotlinx.coroutines.flow.flowOf
++import kotlinx.coroutines.flow.mapLatest
++import kotlinx.coroutines.withContext
++
++/** The selected option and sorted list travel together so the label matches the results. */
++data class SortedTaskList(val tasks: List<TaskItem>, val option: TaskSortOption)
++
++/** Keeps CPU work off Main, cancels stale requests, and refreshes overdue status while observed. */
++@OptIn(ExperimentalCoroutinesApi::class)
++class TaskSortingService @Inject constructor(
++    @SortingDispatcher private val dispatcher: CoroutineDispatcher,
++    private val clock: TaskClock
++) {
++    fun observe(tasks: Flow<List<TaskItem>>, options: Flow<TaskSortOption>): Flow<SortedTaskList> =
++        options.flatMapLatest { option ->
++            val times = if (option == TaskSortOption.URGENCY) {
++                flow {
++                    while (true) {
++                        emit(clock.nowMillis())
++                        delay(60_000L)
++                    }
++                }
++            } else {
++                flowOf(clock.nowMillis())
++            }
++            combine(tasks, times) { items, now -> items to now }
++                .mapLatest { (items, now) ->
++                    SortedTaskList(sort(items, option, now), option)
++                }
++        }
++
++    suspend fun sort(
++        tasks: List<TaskItem>,
++        option: TaskSortOption,
++        nowMillis: Long = clock.nowMillis()
++    ): List<TaskItem> = withContext(dispatcher) {
++        val context = currentCoroutineContext()
++        // Copy mutable legacy model fields once before comparing. Repository emissions
++        // are treated as snapshots and must not be mutated concurrently by callers.
++        val snapshot = ArrayList<TaskItem>(tasks.size)
++        for (task in tasks) {
++            context.ensureActive()
++            snapshot.add(task.copy())
++        }
++        TaskSortPolicy.sort(snapshot, option, nowMillis) { context.ensureActive() }
++    }
++}
+diff -ruN Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgency.kt Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgency.kt
+--- Milestone_Two_Baseline/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgency.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgency.kt	2026-09-27 16:02:43.533174957 -0700
+@@ -0,0 +1,45 @@
++package com.MatthewBaerg.multitasked.ui.tasks
++
++import com.MatthewBaerg.multitasked.data.model.Priority
++import com.MatthewBaerg.multitasked.data.model.TaskItem
++
++/** Business rules shared by the algorithms, independent of Android and wall-clock reads. */
++internal object TaskUrgency {
++    // Explicit ranks avoid coupling the rule to the enum's declaration order.
++    fun rank(priority: Priority): Int = when (priority) {
++        Priority.HIGH -> 0
++        Priority.MEDIUM -> 1
++        Priority.LOW -> 2
++        Priority.NONE -> 3
++    }
++
++    /** null is later than EVERY real timestamp, including Long.MAX_VALUE. */
++    fun compareDates(left: Long?, right: Long?): Int = when {
++        left == null && right == null -> 0
++        left == null -> 1
++        right == null -> -1
++        else -> left.compareTo(right) // Do not subtract: subtraction can overflow.
++    }
++
++    /** Date order, then urgency level; exact ties retain input order in merge sort. */
++    val dueDateComparator: Comparator<TaskItem> = Comparator { left, right ->
++        val dateOrder = compareDates(left.dueDate, right.dueDate)
++        if (dateOrder != 0) dateOrder else rank(left.priority).compareTo(rank(right.priority))
++    }
++
++    /**
++     * Incomplete before complete; overdue before non-overdue; HIGH before NONE;
++     * then earlier date, older creation time, and ID. Capture now ONCE per sort.
++     * A task due exactly at now is due, but is not yet overdue.
++     */
++    fun comparator(nowMillis: Long): Comparator<TaskItem> =
++        compareBy<TaskItem> { it.isDone }
++            .thenBy { task -> if (isOverdue(task, nowMillis)) 0 else 1 }
++            .thenBy { rank(it.priority) }
++            .thenComparator { left, right -> compareDates(left.dueDate, right.dueDate) }
++            .thenBy { it.createdAt }
++            .thenBy { it.id }
++
++    private fun isOverdue(task: TaskItem, nowMillis: Long): Boolean =
++        !task.isDone && task.dueDate?.let { it < nowMillis } == true
++}
+diff -ruN Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModelTest.kt Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModelTest.kt
+--- Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModelTest.kt	2026-09-20 17:44:14.000000000 -0700
++++ Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModelTest.kt	2026-09-27 16:06:17.075823235 -0700
+@@ -15,8 +15,10 @@
+ import kotlinx.coroutines.flow.flowOf
+ import kotlinx.coroutines.launch
+ import kotlinx.coroutines.test.UnconfinedTestDispatcher
++import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.test.advanceUntilIdle
+ import kotlinx.coroutines.test.runTest
++import kotlinx.coroutines.test.runCurrent
+ import org.junit.Assert.assertEquals
+ import org.junit.Assert.assertNull
+ import org.junit.Rule
+@@ -28,6 +30,34 @@
+     val mainDispatcherRule = MainDispatcherRule()
+ 
+     @Test
++    fun selectingDueDate_updatesSortLabelAndTasks() = runTest {
++        val repository = FakeBoardRepository(initialTasks = listOf(
++            TaskItem(id = "late", dueDate = 200L), TaskItem(id = "early", dueDate = 150L)))
++        val viewModel = createViewModel(repository)
++        collectState(viewModel)
++        runCurrent()
++        viewModel.onAction(BoardDetailAction.SortChanged(TaskSortOption.DUE_DATE))
++        runCurrent()
++        assertEquals(TaskSortOption.DUE_DATE, viewModel.uiState.value.sortOption)
++        assertEquals(listOf("early", "late"), viewModel.uiState.value.tasks.map { it.id })
++    }
++
++    @Test
++    fun urgencyReordersAfterRepositoryEmitsAnEditedTask() = runTest {
++        val repository = FakeBoardRepository(initialTasks = listOf(
++            TaskItem(id = "a", priority = Priority.HIGH), TaskItem(id = "b", priority = Priority.LOW)))
++        val viewModel = createViewModel(repository)
++        collectState(viewModel)
++        viewModel.onAction(BoardDetailAction.SortChanged(TaskSortOption.URGENCY))
++        runCurrent()
++        assertEquals(listOf("a", "b"), viewModel.uiState.value.tasks.map { it.id })
++        repository.emitTasks(listOf(TaskItem(id = "a", isDone = true, priority = Priority.HIGH),
++            TaskItem(id = "b", priority = Priority.LOW)))
++        runCurrent()
++        assertEquals(listOf("b", "a"), viewModel.uiState.value.tasks.map { it.id })
++    }
++
++    @Test
+     fun addTask_trimsTitleBeforeCallingRepository() = runTest {
+         val repository = FakeBoardRepository()
+         val viewModel = createViewModel(repository)
+@@ -92,7 +122,8 @@
+         BoardDetailViewModel(
+             repository = repository,
+             celebrationSettings = FakeCelebrationSettings(),
+-            savedStateHandle = SavedStateHandle(mapOf("boardId" to TEST_BOARD_ID))
++            savedStateHandle = SavedStateHandle(mapOf("boardId" to TEST_BOARD_ID)),
++            taskSortingService = TaskSortingService(Dispatchers.Main, TaskClock { 100L })
+         )
+ 
+     private fun kotlinx.coroutines.test.TestScope.collectState(viewModel: BoardDetailViewModel) {
+@@ -113,6 +144,7 @@
+             Board(id = TEST_BOARD_ID, name = "Test board")
+         )
+         private val tasks = MutableStateFlow(initialTasks)
++        fun emitTasks(items: List<TaskItem>) { tasks.value = items }
+         private val members = MutableStateFlow<List<User>>(emptyList())
+ 
+         var addedTitle: String? = null
+diff -ruN Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorterTest.kt Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorterTest.kt
+--- Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorterTest.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorterTest.kt	2026-09-27 16:11:06.266012011 -0700
+@@ -0,0 +1,58 @@
++package com.MatthewBaerg.multitasked.ui.tasks
++
++import kotlin.random.Random
++import kotlinx.coroutines.CancellationException
++import org.junit.Assert.*
++import org.junit.Test
++
++class TaskMergeSorterTest {
++    private val order = Comparator<Int> { left, right -> left.compareTo(right) }
++
++    @Test fun emptyInputProducesEmptyOutput() = assertEquals(emptyList<Int>(), TaskMergeSorter.sort(emptyList(), order))
++
++    @Test fun singleItem() = assertEquals(listOf(4), TaskMergeSorter.sort(listOf(4), order))
++
++    @Test fun reverseSortedWithDuplicates() = assertEquals(
++        listOf(-1, 2, 2, 4, 5), TaskMergeSorter.sort(listOf(5, 4, 2, 2, -1), order)
++    )
++
++    @Test fun inputIsNotReordered() {
++        val input = mutableListOf(3, 1, 2)
++        val result = TaskMergeSorter.sort(input, order)
++        assertEquals(listOf(3, 1, 2), input)
++        assertEquals(listOf(1, 2, 3), result)
++        assertNotSame(input, result)
++    }
++
++    @Test fun equalKeysRemainStableAcrossMergeBoundaries() {
++        data class Record(val key: Int, val id: String)
++        val input = listOf(Record(2, "a"), Record(1, "b"), Record(2, "c"), Record(1, "d"))
++        val result = TaskMergeSorter.sort(input, compareBy { it.key })
++        assertEquals(listOf("b", "d", "a", "c"), result.map { it.id })
++    }
++
++    @Test fun randomizedResultsMatchIndependentStandardSort() {
++        val random = Random(499)
++        repeat(100) {
++            val input = List(random.nextInt(0, 500)) { random.nextInt(-50, 51) }
++            assertEquals(input.sorted(), TaskMergeSorter.sort(input, order))
++        }
++    }
++
++    @Test fun comparisonCountStaysWithinNLogNBound() {
++        val input = (4096 downTo 1).toList()
++        var comparisons = 0
++        TaskMergeSorter.sort(input, Comparator { a, b -> comparisons++; a.compareTo(b) })
++        assertTrue(comparisons <= 4096 * 12)
++    }
++
++    @Test fun cancellationStopsWork() {
++        var checkpoints = 0
++        assertThrows(CancellationException::class.java) {
++            TaskMergeSorter.sort((100 downTo 1).toList(), order) {
++                if (++checkpoints == 230) throw CancellationException("cancel test")
++            }
++        }
++        assertEquals(230, checkpoints)
++    }
++}
+diff -ruN Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueueTest.kt Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueueTest.kt
+--- Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueueTest.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueueTest.kt	2026-09-27 16:06:15.583832523 -0700
+@@ -0,0 +1,79 @@
++package com.MatthewBaerg.multitasked.ui.tasks
++
++import com.MatthewBaerg.multitasked.data.model.TaskItem
++import java.util.PriorityQueue
++import kotlin.random.Random
++import org.junit.Assert.*
++import org.junit.Test
++
++class TaskPriorityQueueTest {
++    private val order = compareBy<TaskItem> { it.createdAt }.thenBy { it.id }
++
++    @Test fun emptyQueueReturnsNull() {
++        val queue = TaskPriorityQueue(order)
++        assertNull(queue.peek())
++        assertNull(queue.poll())
++        assertTrue(queue.isEmpty())
++        assertEquals(0, queue.size)
++    }
++
++    @Test fun singleItemCanBePeekedThenRemoved() {
++        val queue = TaskPriorityQueue(order)
++        queue.offer(TaskItem(id = "a"))
++        assertEquals("a", queue.peek()?.id)
++        assertEquals(1, queue.size)
++        assertEquals("a", queue.poll()?.id)
++        assertNull(queue.poll())
++    }
++
++    @Test fun bothChildrenAndSingleChildAreHandled() {
++        val queue = TaskPriorityQueue(order)
++        listOf(9L, 4L, 8L, 1L, 3L, 2L).forEach { queue.offer(TaskItem(createdAt = it)) }
++        val result = generateSequence { queue.poll() }.map { it.createdAt }.toList()
++        assertEquals(listOf(1L, 2L, 3L, 4L, 8L, 9L), result)
++    }
++
++    @Test fun duplicateEntriesAreNotDropped() {
++        val queue = TaskPriorityQueue(order)
++        repeat(6) { queue.offer(TaskItem(id = "same")) }
++        assertEquals(6, generateSequence { queue.poll() }.count())
++    }
++
++    @Test fun mutationOfInputOrPeekDoesNotCorruptHeapKeys() {
++        val queue = TaskPriorityQueue(order)
++        val input = TaskItem(id = "first", createdAt = 1L)
++        queue.offer(input)
++        queue.offer(TaskItem(id = "second", createdAt = 2L))
++        input.createdAt = 999L
++        queue.peek()!!.createdAt = 999L
++        assertEquals("first", queue.poll()?.id)
++        assertEquals("second", queue.poll()?.id)
++    }
++
++    @Test fun randomizedInterleavingMatchesJdkPriorityQueue() {
++        val random = Random(499)
++        val actual = TaskPriorityQueue(order)
++        val expected = PriorityQueue(order)
++        repeat(2000) { index ->
++            if (expected.isEmpty() || random.nextBoolean()) {
++                val task = TaskItem(id = index.toString(), createdAt = random.nextLong(-500L, 501L))
++                actual.offer(task)
++                expected.offer(task)
++            } else {
++                assertEquals(expected.poll(), actual.poll())
++            }
++            assertEquals(expected.size, actual.size)
++            assertEquals(expected.peek(), actual.peek())
++        }
++        while (expected.isNotEmpty()) assertEquals(expected.poll(), actual.poll())
++        assertTrue(actual.isEmpty())
++    }
++
++    @Test fun insertionAndDrainHaveNLogNComparisonBound() {
++        var comparisons = 0
++        val queue = TaskPriorityQueue(Comparator { a, b -> comparisons++; order.compare(a, b) })
++        for (value in 4096 downTo 1) queue.offer(TaskItem(createdAt = value.toLong()))
++        while (!queue.isEmpty()) queue.poll()
++        assertTrue(comparisons <= 3 * 4096 * 12)
++    }
++}
+diff -ruN Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortPolicyTest.kt Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortPolicyTest.kt
+--- Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortPolicyTest.kt	2026-09-20 17:43:40.000000000 -0700
++++ Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortPolicyTest.kt	2026-09-27 16:06:16.623825979 -0700
+@@ -1,10 +1,54 @@
+ package com.MatthewBaerg.multitasked.ui.tasks
+ 
+ import com.MatthewBaerg.multitasked.data.model.TaskItem
++import com.MatthewBaerg.multitasked.data.model.Priority
++import kotlinx.coroutines.CancellationException
++import org.junit.Assert.assertThrows
+ import org.junit.Assert.assertEquals
+ import org.junit.Test
+ 
+ class TaskSortPolicyTest {
++    @Test fun dueDateOptionUsesDateThenPriorityWithStableTies() {
++        val tasks = listOf(TaskItem(id = "none"), TaskItem(id = "late", dueDate = 200L),
++            TaskItem(id = "z", dueDate = 10L, priority = Priority.HIGH),
++            TaskItem(id = "a", dueDate = 10L, priority = Priority.HIGH))
++        assertEquals(listOf("z", "a", "late", "none"),
++            TaskSortPolicy.sort(tasks, TaskSortOption.DUE_DATE).map { it.id })
++    }
++
++    @Test fun urgencyOptionDrainsHeapInRuleOrder() {
++        val tasks = listOf(TaskItem(id = "done", isDone = true, dueDate = 1L),
++            TaskItem(id = "normal", priority = Priority.HIGH),
++            TaskItem(id = "late", dueDate = 1L, priority = Priority.LOW))
++        assertEquals(listOf("late", "normal", "done"),
++            TaskSortPolicy.sort(tasks, TaskSortOption.URGENCY, 100L).map { it.id })
++    }
++
++    @Test fun heapPathCooperatesWithCancellation() {
++        var calls = 0
++        assertThrows(CancellationException::class.java) {
++            TaskSortPolicy.sort(List(500) { TaskItem(createdAt = (500 - it).toLong()) },
++                TaskSortOption.URGENCY, 100L) {
++                if (++calls == 30) throw CancellationException("test")
++            }
++        }
++        assertEquals(30, calls)
++    }
++
++    @Test fun allOptionsAcceptEmptyInput() {
++        TaskSortOption.entries.forEach {
++            assertEquals(emptyList<TaskItem>(), TaskSortPolicy.sort(emptyList(), it, 100L))
++        }
++    }
++
++    @Test fun originalAlphabeticAndCompletionOptionsKeepTheirMeaning() {
++        val tasks = listOf(TaskItem(id = "z", title = "zebra", isDone = false),
++            TaskItem(id = "a", title = "Alpha", isDone = true))
++        assertEquals(listOf("a", "z"), TaskSortPolicy.sort(tasks, TaskSortOption.ALPHA_ASC).map { it.id })
++        assertEquals(listOf("z", "a"), TaskSortPolicy.sort(tasks, TaskSortOption.ALPHA_DESC).map { it.id })
++        assertEquals(listOf("a", "z"), TaskSortPolicy.sort(tasks, TaskSortOption.COMPLETED_FIRST).map { it.id })
++    }
++
+     @Test
+     fun recentSort_usesCreationTimeInsteadOfDocumentId() {
+         val olderWithLargerId = TaskItem(id = "z-id", title = "Older", createdAt = 100L)
+diff -ruN Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingServiceTest.kt Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingServiceTest.kt
+--- Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingServiceTest.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingServiceTest.kt	2026-09-27 16:06:16.263828224 -0700
+@@ -0,0 +1,113 @@
++package com.MatthewBaerg.multitasked.ui.tasks
++
++import com.MatthewBaerg.multitasked.data.model.Priority
++import com.MatthewBaerg.multitasked.data.model.TaskItem
++import java.util.concurrent.Executors
++import kotlinx.coroutines.*
++import kotlinx.coroutines.flow.*
++import kotlinx.coroutines.test.*
++import org.junit.Assert.*
++import org.junit.Test
++
++@OptIn(ExperimentalCoroutinesApi::class)
++class TaskSortingServiceTest {
++    @Test fun listWorkRunsOnInjectedWorkerThread() = runBlocking {
++        Executors.newSingleThreadExecutor { action -> Thread(action, "sort-test-worker") }
++            .asCoroutineDispatcher().use { dispatcher ->
++                val threads = mutableListOf<String>()
++                val input = object : AbstractList<TaskItem>() {
++                    override val size = 2
++                    override fun get(index: Int): TaskItem {
++                        threads.add(Thread.currentThread().name)
++                        return TaskItem(id = index.toString(), dueDate = (2 - index).toLong())
++                    }
++                }
++                val service = TaskSortingService(dispatcher, TaskClock { 100L })
++                assertEquals(listOf("1", "0"), service.sort(input, TaskSortOption.DUE_DATE).map { it.id })
++                assertTrue(threads.isNotEmpty())
++                assertTrue(threads.all { it == "sort-test-worker" })
++            }
++    }
++
++    @Test fun returnedTasksDoNotAliasMutableInputFields() = runTest {
++        val input = TaskItem(id = "a", createdAt = 3L)
++        val service = TaskSortingService(StandardTestDispatcher(testScheduler), TaskClock { 100L })
++        val result = service.sort(listOf(input), TaskSortOption.RECENT)
++        result.single().createdAt = 99L
++        assertEquals(3L, input.createdAt)
++    }
++
++    @Test fun changingOptionKeepsResultAndLabelTogether() = runTest {
++        val service = TaskSortingService(StandardTestDispatcher(testScheduler), TaskClock { 100L })
++        val tasks = MutableStateFlow(listOf(TaskItem(id = "b", createdAt = 20L, dueDate = 200L),
++            TaskItem(id = "a", createdAt = 10L, dueDate = 150L)))
++        val options = MutableStateFlow(TaskSortOption.RECENT)
++        val results = mutableListOf<SortedTaskList>()
++        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
++            service.observe(tasks, options).toList(results)
++        }
++        runCurrent()
++        assertEquals(listOf("b", "a"), results.last().tasks.map { it.id })
++        options.value = TaskSortOption.DUE_DATE
++        runCurrent()
++        assertEquals(TaskSortOption.DUE_DATE, results.last().option)
++        assertEquals(listOf("a", "b"), results.last().tasks.map { it.id })
++    }
++
++    @Test fun urgencyRefreshesAsTimePassesAndStopsWithCollector() = runTest {
++        var now = 100L
++        val service = TaskSortingService(StandardTestDispatcher(testScheduler), TaskClock { now })
++        val tasks = flowOf(listOf(
++            TaskItem(id = "low", dueDate = 150L, priority = Priority.LOW),
++            TaskItem(id = "high", dueDate = 999999L, priority = Priority.HIGH)))
++        val results = mutableListOf<SortedTaskList>()
++        val collector = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
++            service.observe(tasks, flowOf(TaskSortOption.URGENCY)).toList(results)
++        }
++        runCurrent()
++        assertEquals("high", results.last().tasks.first().id)
++        now = 151L
++        advanceTimeBy(60_000L)
++        runCurrent()
++        assertEquals("low", results.last().tasks.first().id)
++        collector.cancelAndJoin()
++        val count = results.size
++        advanceTimeBy(120_000L)
++        runCurrent()
++        assertEquals(count, results.size)
++    }
++
++    @Test fun latestTaskSnapshotWins() = runTest {
++        val service = TaskSortingService(StandardTestDispatcher(testScheduler), TaskClock { 100L })
++        val tasks = MutableStateFlow(listOf(TaskItem(id = "old")))
++        val results = mutableListOf<SortedTaskList>()
++        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
++            service.observe(tasks, flowOf(TaskSortOption.DUE_DATE)).toList(results)
++        }
++        runCurrent()
++        tasks.value = listOf(TaskItem(id = "intermediate"))
++        tasks.value = listOf(TaskItem(id = "latest"))
++        runCurrent()
++        assertEquals(listOf("latest"), results.last().tasks.map { it.id })
++    }
++
++    @Test fun canceledSortDoesNotPublishAResult() = runTest {
++        val service = TaskSortingService(StandardTestDispatcher(testScheduler), TaskClock { 100L })
++        var result: List<TaskItem>? = null
++        val job = launch {
++            val ownJob = currentCoroutineContext().job
++            val input = object : AbstractList<TaskItem>() {
++                override val size = 100
++                override fun get(index: Int): TaskItem {
++                    if (index == 3) ownJob.cancel()
++                    return TaskItem(id = index.toString())
++                }
++            }
++            result = service.sort(input, TaskSortOption.URGENCY)
++        }
++        runCurrent()
++        job.join()
++        assertTrue(job.isCancelled)
++        assertNull(result)
++    }
++}
+diff -ruN Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgencyTest.kt Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgencyTest.kt
+--- Milestone_Two_Baseline/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgencyTest.kt	1969-12-31 16:00:00.000000000 -0800
++++ Enhanced/app/src/test/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgencyTest.kt	2026-09-27 16:06:15.919830399 -0700
+@@ -0,0 +1,78 @@
++package com.MatthewBaerg.multitasked.ui.tasks
++
++import com.MatthewBaerg.multitasked.data.model.Priority
++import com.MatthewBaerg.multitasked.data.model.TaskItem
++import kotlin.random.Random
++import org.junit.Assert.*
++import org.junit.Test
++
++class TaskUrgencyTest {
++    private val now = 100L
++    private val order = TaskUrgency.comparator(now)
++    private fun sorted(vararg tasks: TaskItem) = tasks.toList().sortedWith(order).map { it.id }
++
++    @Test fun incompleteBeforeCompletedEvenIfCompletedIsOverdue() {
++        assertEquals(listOf("open", "done"), sorted(
++            TaskItem(id = "done", isDone = true, dueDate = 1L, priority = Priority.HIGH),
++            TaskItem(id = "open")
++        ))
++    }
++
++    @Test fun overdueBeforeUpcomingRegardlessOfPriority() {
++        assertEquals(listOf("late", "future"), sorted(
++            TaskItem(id = "future", dueDate = 200L, priority = Priority.HIGH),
++            TaskItem(id = "late", dueDate = 99L, priority = Priority.LOW)
++        ))
++    }
++
++    @Test fun priorityIsUsedWithinSameOverdueGroup() {
++        val input = Priority.entries.reversed().map { TaskItem(id = it.name, priority = it) }
++        assertEquals(listOf("HIGH", "MEDIUM", "LOW", "NONE"), input.sortedWith(order).map { it.id })
++    }
++
++    @Test fun equalPriorityUsesDateThenCreationThenId() {
++        assertEquals(listOf("early", "a", "b", "new", "undated"), sorted(
++            TaskItem(id = "undated"),
++            TaskItem(id = "new", dueDate = 200L, createdAt = 2L),
++            TaskItem(id = "b", dueDate = 200L, createdAt = 1L),
++            TaskItem(id = "a", dueDate = 200L, createdAt = 1L),
++            TaskItem(id = "early", dueDate = 150L, createdAt = 999L)
++        ))
++    }
++
++    @Test fun exactlyNowIsNotOverdue() {
++        assertEquals(listOf("high", "due-now"), sorted(
++            TaskItem(id = "due-now", dueDate = now, priority = Priority.LOW),
++            TaskItem(id = "high", dueDate = 200L, priority = Priority.HIGH)
++        ))
++    }
++
++    @Test fun extremeDatesAndNullAreComparedWithoutOverflow() {
++        val input = listOf(TaskItem(id = "null"), TaskItem(id = "max", dueDate = Long.MAX_VALUE),
++            TaskItem(id = "min", dueDate = Long.MIN_VALUE))
++        assertEquals(listOf("min", "max", "null"), input.sortedWith(TaskUrgency.dueDateComparator).map { it.id })
++    }
++
++    @Test fun dueDateTiesUsePriorityButExactTiesRemainStable() {
++        val input = listOf(
++            TaskItem(id = "z", dueDate = 10L, priority = Priority.HIGH),
++            TaskItem(id = "low", dueDate = 10L, priority = Priority.LOW),
++            TaskItem(id = "a", dueDate = 10L, priority = Priority.HIGH))
++        val result = TaskMergeSorter.sort(input, TaskUrgency.dueDateComparator)
++        assertEquals(listOf("z", "a", "low"), result.map { it.id })
++    }
++
++    @Test fun urgencyComparatorIsAntisymmetricAndTransitive() {
++        val random = Random(499)
++        fun task() = TaskItem(id = random.nextInt(10).toString(), isDone = random.nextBoolean(),
++            dueDate = if (random.nextBoolean()) null else random.nextLong(0L, 201L),
++            priority = Priority.entries[random.nextInt(4)], createdAt = random.nextLong())
++        repeat(2000) {
++            val a = task(); val b = task(); val c = task()
++            assertEquals(order.compare(a, b).compareTo(0), -order.compare(b, a).compareTo(0))
++            if (order.compare(a, b) <= 0 && order.compare(b, c) <= 0) {
++                assertTrue(order.compare(a, c) <= 0)
++            }
++        }
++    }
++}

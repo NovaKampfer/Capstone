@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS local_boards (id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, createdAt INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS local_tasks (id TEXT NOT NULL PRIMARY KEY, boardId TEXT NOT NULL, title TEXT NOT NULL, completed INTEGER NOT NULL, createdAt INTEGER NOT NULL, FOREIGN KEY(boardId) REFERENCES local_boards(id) ON UPDATE NO ACTION ON DELETE CASCADE);
+CREATE INDEX IF NOT EXISTS index_local_tasks_boardId_createdAt ON local_tasks(boardId, createdAt);
