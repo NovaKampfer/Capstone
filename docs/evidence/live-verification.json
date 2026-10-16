@@ -1,0 +1,210 @@
+{
+  "base_url": "https://novakampfer.github.io/Capstone/",
+  "unauthenticated": true,
+  "checks": [
+    {
+      "url": "https://github.com/NovaKampfer/Capstone",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/AppDatabase.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/AppDatabase.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/BoardDao.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/BoardDao.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/LocalBoardRepository.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/LocalBoardRepository.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/TaskDao.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/TaskDao.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/TaskEntity.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/data/local/TaskEntity.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/local/LocalWorkspaceScreen.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/local/LocalWorkspaceScreen.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Original/README.md",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-four/Original/README.md"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-three/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorter.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-three/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskMergeSorter.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-three/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueue.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-three/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskPriorityQueue.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-three/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingService.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-three/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskSortingService.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-three/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgency.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-three/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/TaskUrgency.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-two/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/Settings.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-two/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/Settings.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-two/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailContract.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-two/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailContract.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-two/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailScreen.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-two/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailScreen.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-two/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModel.kt",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/blob/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts/milestone-two/Enhanced/app/src/main/java/com/MatthewBaerg/multitasked/ui/tasks/BoardDetailViewModel.kt"
+    },
+    {
+      "url": "https://github.com/NovaKampfer/Capstone/tree/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts",
+      "status": 200,
+      "final_url": "https://github.com/NovaKampfer/Capstone/tree/e9f8f9dd4474ee3c00f5e033590802b56ef212a7/artifacts"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/algorithms-narrative.html",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/algorithms-narrative.html"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/assets/style.css",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/assets/style.css"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/databases-narrative.html",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/databases-narrative.html"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/design-narrative.html",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/design-narrative.html"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/downloads/MultiTasked-final-publication.zip",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/downloads/MultiTasked-final-publication.zip",
+      "sha256_match": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/downloads/MultiTasked-milestone-four-publication.zip",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/downloads/MultiTasked-milestone-four-publication.zip",
+      "sha256_match": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/downloads/MultiTasked-milestone-three-publication.zip",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/downloads/MultiTasked-milestone-three-publication.zip",
+      "sha256_match": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/downloads/MultiTasked-milestone-two-publication.zip",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/downloads/MultiTasked-milestone-two-publication.zip",
+      "sha256_match": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/downloads/algorithms-narrative.docx",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/downloads/algorithms-narrative.docx",
+      "sha256_match": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/downloads/databases-narrative.docx",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/downloads/databases-narrative.docx",
+      "sha256_match": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/downloads/software-design-narrative.docx",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/downloads/software-design-narrative.docx",
+      "sha256_match": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence.html",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence.html"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/android-build-final.log",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/android-build-final.log"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/android-build-first.log",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/android-build-first.log"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/android-instrumentation-first.log",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/android-instrumentation-first.log"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/android-instrumentation.log",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/android-instrumentation.log"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/download-checksums.json",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/download-checksums.json"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/final-changes.json",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/final-changes.json"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/provenance.json",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/provenance.json"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/sql-rerun.log",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/sql-rerun.log"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/website-checks.json",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/website-checks.json"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/index.html",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/index.html",
+      "has_expected_content": true
+    }
+  ],
+  "passed": true
+}
