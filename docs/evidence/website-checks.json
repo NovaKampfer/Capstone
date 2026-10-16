@@ -1,0 +1,20 @@
+{
+  "html_pages": 5,
+  "local_links_checked": 94,
+  "source_targets_checked": 15,
+  "downloads_verified": 7,
+  "errors": [],
+  "recording": "Missing; access and audio cannot be verified",
+  "source_links": "Exist in immutable artifact commit; public HTTP verification follows deployment",
+  "responsive_viewports": [
+    320,
+    390,
+    768,
+    1440
+  ],
+  "responsive_status": "All 5 pages checked at 320, 390, 768 and 1440 pixels: no horizontal document overflow (20 checks). Long filenames wrap; tables scroll within labeled regions.",
+  "docx": "Supplied DOCX downloads are unchanged and ZIP-integrity checked. Re-render unavailable: LibreOffice not installed.",
+  "keyboard": "Visible focus outline observed; native links and focusable table scroll regions; skip link targets main.",
+  "mobile_visual": "Home, database diagram and narrative views inspected in browser.",
+  "website_validation_date": "2026-10-16"
+}
