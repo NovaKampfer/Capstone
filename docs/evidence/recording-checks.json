@@ -1,0 +1,73 @@
+{
+  "input_filename": "2026-10-16 20-49-29.mp4",
+  "input_bytes": 1004117118,
+  "input_sha256": "9ce16917af5aa8f36e406486fd2d4f928145ee0ce72b216b3375893c6d56afd7",
+  "duration_seconds": 790.5,
+  "resolution": [
+    1280,
+    720
+  ],
+  "sampled_frame_seconds": [
+    0,
+    30,
+    60,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    270,
+    300,
+    330,
+    360,
+    390,
+    420,
+    450,
+    480,
+    510,
+    540,
+    570,
+    600,
+    630,
+    660,
+    690,
+    720,
+    750,
+    780,
+    788
+  ],
+  "publication_path": "media/matthew-baerg-code-review.mp4",
+  "publication_bytes": 17001989,
+  "publication_sha256": "cb194d365499a40593d2f93d5be3e7f2193454891c0b9061bb4c0f28a7e54e38",
+  "video_codec": "H.264",
+  "audio_codec": "AAC",
+  "publication_frame_rate": 15,
+  "original_frame_rate": 30,
+  "fast_start": true,
+  "changes": "Full duration retained; same 1280x720 resolution; re-encoded video/audio and removed container metadata. Original unchanged.",
+  "full_publication_decode": "Passed: ffmpeg decoded full video/audio to null output with exit code 0 and no errors.",
+  "audio_scan": {
+    "threshold_db": -40,
+    "minimum_seconds": 3,
+    "intervals": [
+      {
+        "start": 175.299708,
+        "end": 180.366167,
+        "duration": 5.066458
+      }
+    ],
+    "scope": "Full source audio scanned. Silence detection does not establish subjective audio quality."
+  },
+  "transcription": "Local faster-whisper small.en generated speech segments from 0.69 to 790.2 seconds. Edited automated transcript and captions; unclear final sentence labeled. Not a certified verbatim transcript.",
+  "privacy_review": "28 sampled frames inspected across the full recording, plus full-resolution source frames; observed Android Studio source walkthrough with no credential or private-record content in inspected frames. Not a frame-by-frame audit.",
+  "public_access": "Pending deployment verification",
+  "verification_date": "2026-10-17",
+  "limitations": [
+    "Author should listen through the entire recording to confirm microphone quality; no complete human listening review is claimed.",
+    "Separate video length/content directions were not supplied.",
+    "An unclear closing sentence is marked in the automated transcript."
+  ],
+  "publication_duration_seconds": 790.6,
+  "local_browser": "1280x720 video; duration 790.6s; readyState 4; playback advanced to 15.88s, Space paused; captions visibly rendered; 390px player inspected."
+}

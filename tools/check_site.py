@@ -14,7 +14,7 @@ class Page(HTMLParser):
             self.ids.add(a['id'])
         if tag=='h1':self.h1+=1
         if tag=='img' and 'alt' not in a:self.issues.append('image missing alt')
-        for k in ['href','src']:
+        for k in ['href','src','poster']:
             if k in a:self.links.append(a[k])
 pages={p.resolve():Page(p.read_text(encoding='utf-8')) for p in SITE.rglob('*.html')}
 errors=[]; count=0; source_links=0
@@ -48,8 +48,8 @@ for name,expected in checksums.items():
                 data=z.read(item)
                 if any(re.search(pat,data) for pat in patterns): errors.append('Credential-like data in '+item.filename)
 for p in ROOT.rglob('*'):
-    if not p.is_file() or '.git' in p.parts or p.suffix in ('.zip','.docx','.jar','.png','.webp'): continue
+    if not p.is_file() or '.git' in p.parts or p.suffix in ('.zip','.docx','.jar','.png','.webp','.jpg','.mp4'): continue
     if any(re.search(pat,p.read_bytes()) for pat in patterns):errors.append('Credential-like data in '+str(p.relative_to(ROOT)))
-report={'html_pages':len(pages),'local_links_checked':count,'source_targets_checked':source_links,'downloads_verified':len(checksums),'errors':errors,'recording':'Missing; access and audio cannot be verified','source_links':'Exist in immutable artifact commit; public HTTP verification follows deployment'}
+report={'html_pages':len(pages),'local_links_checked':count,'source_targets_checked':source_links,'downloads_verified':len(checksums),'errors':errors,'recording':'Embedded MP4, captions and transcript linked; see recording-checks.json for playback and audio scope','source_links':'Exist in immutable artifact commit; public HTTP verification follows deployment'}
 print(json.dumps(report,indent=2))
 raise SystemExit(bool(errors))

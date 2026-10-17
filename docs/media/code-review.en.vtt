@@ -1,0 +1,876 @@
+WEBVTT
+
+NOTE Automatically generated timing; text edited for apparent transcription errors. Errors may remain.
+
+00:00:00.690 --> 00:00:04.938
+Hello, my name is Matthew Baerg, and
+this is my CS 499 code review of
+
+00:00:04.938 --> 00:00:08.570
+MultiTasked, my Kotlin Android task-
+management application.
+
+00:00:09.090 --> 00:00:12.638
+This is a re-recorded walkthrough of the
+preserved original application.
+
+00:00:12.638 --> 00:00:15.988
+I'll explain its existing structure,
+identify specific strengths and
+
+00:00:15.988 --> 00:00:16.530
+weaknesses,
+
+00:00:16.950 --> 00:00:20.778
+and describe the enhancement plan across
+software design and engineering,
+
+00:00:20.778 --> 00:00:23.190
+algorithms and data structures, and
+databases.
+
+00:00:24.250 --> 00:00:26.430
+The enhancements are also available
+separately in my portfolio,
+
+00:00:26.430 --> 00:00:29.712
+but the main review will stay focused on
+the original code and the reasons
+
+00:00:29.712 --> 00:00:30.510
+for those changes.
+
+00:00:31.210 --> 00:00:34.543
+MultiTasked organizes tasks into shared
+boards. The source includes
+
+00:00:34.543 --> 00:00:37.230
+registration and sign-in, creating and
+joining boards,
+
+00:00:37.830 --> 00:00:41.826
+adding editing tasks, completing tasks,
+assigning them to board members,
+
+00:00:41.826 --> 00:00:42.770
+deleting records.
+
+00:00:43.730 --> 00:00:47.710
+Grocery boards also use task prices and
+running totals.
+
+00:00:49.030 --> 00:00:52.315
+I selected this artifact because it
+connects several areas of software
+
+00:00:52.315 --> 00:00:53.770
+development in one application.
+
+00:00:53.770 --> 00:00:57.213
+A change to the interface can affect
+state management, task ordering,
+
+00:00:57.213 --> 00:00:58.810
+persistence, and error handling.
+
+00:00:59.750 --> 00:01:03.009
+That makes it useful for demonstrating
+how I evaluate an existing design and
+
+00:01:03.009 --> 00:01:04.210
+implement plan improvements.
+
+00:01:04.670 --> 00:01:08.255
+I will distinguish behavior supported by
+the source from behavior that still
+
+00:01:08.255 --> 00:01:09.670
+needs integration and testing.
+
+00:01:10.170 --> 00:01:13.611
+Reading the code alone does not prove
+that every Firebase backend workflow
+
+00:01:13.611 --> 00:01:14.030
+succeeds.
+
+00:01:15.490 --> 00:01:18.330
+The task model shows the information the
+application already supports.
+
+00:01:18.330 --> 00:01:21.630
+Each task has an identifier, a board
+identifier, and a title.
+
+00:01:21.950 --> 00:01:25.549
+It also stores completion status, a
+creation timestamp, notes, and an
+
+00:01:25.549 --> 00:01:28.470
+optional due date, a priority, and an
+optional assignee.
+
+00:01:29.610 --> 00:01:34.501
+These fields matter because the
+algorithm's enhancement does not need to
+
+00:01:34.501 --> 00:01:36.810
+invent an entirely new task model.
+
+00:01:37.390 --> 00:01:41.293
+Creation time can support recent first
+ordering, while due date and priority
+
+00:01:41.293 --> 00:01:43.450
+can support deadline and urgency
+ordering.
+
+00:01:43.450 --> 00:01:48.403
+One detail to notice is that the
+completion status and creation time are
+
+00:01:48.403 --> 00:01:49.710
+mutable properties.
+
+00:01:50.250 --> 00:01:53.370
+A data structure that depends on those
+values must account for changes.
+
+00:01:53.790 --> 00:01:58.093
+For example, if a priority queue stores
+a task and that task's ordering
+
+00:01:58.093 --> 00:01:59.730
+fields change unexpectedly,
+
+00:02:00.170 --> 00:02:02.530
+the queue can stop representing the
+intended order.
+
+00:02:03.090 --> 00:02:07.282
+That is one reason to use controlled
+snapshots when performing enhanced
+
+00:02:07.282 --> 00:02:08.050
+sorting work.
+
+00:02:09.650 --> 00:02:12.930
+The original application already has a
+useful repository boundary.
+
+00:02:12.930 --> 00:02:16.998
+This interface describes board and task
+operations without putting Firestore
+
+00:02:16.998 --> 00:02:18.550
+calls directly in the screen.
+
+00:02:19.370 --> 00:02:24.470
+Reads expose flows of data and writes
+using suspending functions.
+
+00:02:25.070 --> 00:02:29.311
+The broader application already uses
+Compose, ViewModel, StateFlow, and
+
+00:02:29.311 --> 00:02:29.610
+Hilt.
+
+00:02:30.210 --> 00:02:33.992
+I am therefore not claiming that the
+enhancement introduces MVVM from
+
+00:02:33.992 --> 00:02:34.430
+scratch.
+
+00:02:35.130 --> 00:02:38.384
+My goal is to make the existing
+separation more consistent and easier to
+
+00:02:38.384 --> 00:02:38.610
+test.
+
+00:02:38.610 --> 00:02:42.860
+This file is the main software design
+review target at the beginning of the
+
+00:02:42.860 --> 00:02:44.050
+board details screen.
+
+00:02:44.290 --> 00:02:47.510
+The composable collects states from the
+view model.
+
+00:02:47.890 --> 00:02:52.282
+Further down, the same file handles
+screen structure, user controls, task
+
+00:02:52.282 --> 00:02:55.170
+list rendering, task rows, and editing
+behavior.
+
+00:03:00.220 --> 00:03:03.459
+This code provides useful functionality,
+but it concentrates several
+
+00:03:03.459 --> 00:03:04.840
+responsibilities in one place
+
+00:03:04.840 --> 00:03:08.279
+and makes it harder to inspect a visual
+component without also understanding
+
+00:03:08.279 --> 00:03:11.040
+the view model connection and the
+surrounding state behavior.
+
+00:03:11.040 --> 00:03:14.821
+Changes to a task editor also require
+working inside a much larger screen
+
+00:03:14.821 --> 00:03:15.080
+file.
+
+00:03:15.900 --> 00:03:17.780
+Another concrete issue is the
+celebration effect.
+
+00:03:17.980 --> 00:03:20.872
+There are two celebration call sites
+connected to the same celebration
+
+00:03:20.872 --> 00:03:21.120
+state.
+
+00:03:21.520 --> 00:03:25.754
+This duplication makes the intended
+feedback harder to reason about and
+
+00:03:25.754 --> 00:03:28.020
+creates potential duplicate rendering.
+
+00:03:30.240 --> 00:03:33.000
+The enhancement plan was to separate a
+route from rendering screen.
+
+00:03:33.960 --> 00:03:39.057
+The route would own the lifecycle-aware
+state collection and the connection
+
+00:03:39.057 --> 00:03:40.280
+to the view model.
+
+00:03:40.280 --> 00:03:43.605
+The screen will receive state and
+callbacks, which makes its
+
+00:03:43.605 --> 00:03:44.880
+responsibilities clear.
+
+00:03:45.540 --> 00:03:51.136
+I also plan to plan an explicit action
+contract for events such as adding,
+
+00:03:51.136 --> 00:03:53.480
+completing, or deleting a task.
+
+00:03:53.900 --> 00:03:58.435
+Smaller composables would handle focused
+parts of the interface and the task
+
+00:03:58.435 --> 00:04:01.180
+row and editor would move into their own
+file.
+
+00:04:01.700 --> 00:04:05.180
+This introduces more small components
+and files, so it is a trade-off.
+
+00:04:05.180 --> 00:04:08.889
+The benefit is that each part has a
+clear purpose, making changes and
+
+00:04:08.889 --> 00:04:10.340
+testing easier to organize.
+
+00:04:11.760 --> 00:04:16.674
+The addTask and updatePrice methods also
+need explicit validation at this
+
+00:04:16.674 --> 00:04:17.280
+boundary.
+
+00:04:17.760 --> 00:04:20.740
+A disabled button is not enough to
+guarantee valid input.
+
+00:04:21.300 --> 00:04:25.611
+The view model should reject blank task
+titles and prices that are negative
+
+00:04:25.611 --> 00:04:28.140
+or not finite before calling the
+repository.
+
+00:04:29.100 --> 00:04:33.370
+In toggleTaskDone, the celebration state
+can be set before the repository
+
+00:04:33.370 --> 00:04:34.540
+confirms the update.
+
+00:04:34.540 --> 00:04:38.600
+If the write fails, the interface may
+have already indicated success.
+
+00:04:39.160 --> 00:04:42.560
+Enhancement moves that feedback after
+the successful write.
+
+00:04:43.080 --> 00:04:46.530
+The shared error handling helper also
+needs to preserve coroutine
+
+00:04:46.530 --> 00:04:47.220
+cancellation.
+
+00:04:48.200 --> 00:04:52.138
+Cancellation is part of a normal life
+cycle behavior, so it should be
+
+00:04:52.138 --> 00:04:55.620
+rethrown rather than turned into an
+ordinary failure message.
+
+00:04:56.100 --> 00:05:00.623
+The user should receive a stable message
+and logging should be best effort,
+
+00:05:00.623 --> 00:05:04.000
+so a logging failure does not hide the
+original problem.
+
+00:05:04.540 --> 00:05:07.846
+Finally, this view model depends on the
+concrete SettingsRepository, even
+
+00:05:07.846 --> 00:05:10.020
+though it needs only the celebration
+preference.
+
+00:05:10.740 --> 00:05:14.192
+A narrow CelebrationSettings interface
+makes the dependencies smaller and
+
+00:05:14.192 --> 00:05:15.800
+allow a simple fake in unit tests.
+
+00:05:16.340 --> 00:05:19.940
+These changes demonstrate separation of
+responsibility, validation,
+
+00:05:19.940 --> 00:05:22.680
+dependency design, and safer
+asynchronous behavior.
+
+00:05:23.540 --> 00:05:25.260
+They improve this feature's error path.
+
+00:05:25.500 --> 00:05:28.802
+They do not establish that every logging
+or security concern elsewhere in
+
+00:05:28.802 --> 00:05:30.340
+the application has been resolved.
+
+00:05:30.340 --> 00:05:33.973
+The original sorting options include
+recent, alphabetical, ascending and
+
+00:05:33.973 --> 00:05:36.900
+descending, completed first, or
+incomplete first ordering.
+
+00:05:37.320 --> 00:05:39.180
+These use standard Kotlin collection
+operations.
+
+00:05:39.720 --> 00:05:41.620
+The recent option has a correctness
+problem.
+
+00:05:41.860 --> 00:05:46.980
+It sorts tasks by ID. An ID identifies a
+document.
+
+00:05:47.160 --> 00:05:50.100
+It does not express the creation time
+rule that the label promises.
+
+00:05:50.340 --> 00:05:54.372
+The task model already has createdAt, so
+the software-design enhancement
+
+00:05:54.372 --> 00:05:57.340
+first extracts sorting policy, and
+corrects that key.
+
+00:05:57.340 --> 00:06:02.265
+The larger algorithm's enhancement
+addresses a separate need, ordering
+tasks
+
+00:06:02.265 --> 00:06:03.820
+by deadline and urgency.
+
+00:06:04.460 --> 00:06:09.264
+The original application stores due
+dates and priorities, but the sorting
+
+00:06:09.264 --> 00:06:10.580
+options are missing.
+
+00:06:11.220 --> 00:06:15.640
+For due date ordering, the plan uses a
+custom, stable merge sort.
+
+00:06:16.380 --> 00:06:20.019
+Dated tasks come before tasks without
+dates, earlier dates come first, and
+
+00:06:20.019 --> 00:06:21.740
+priority resolves with equal dates.
+
+00:06:22.440 --> 00:06:27.105
+When both keys are equal, the algorithm
+preserves the input order, choosing
+
+00:06:27.105 --> 00:06:31.707
+the left item when two values compare
+equally, is what preserves stability
+
+00:06:31.707 --> 00:06:32.640
+during a merge.
+
+00:06:33.580 --> 00:06:37.600
+Merge sort takes O of n log n time, and
+O of n auxiliary storage.
+
+00:06:38.680 --> 00:06:40.160
+Plus, its recursion stack.
+
+00:06:40.960 --> 00:06:44.660
+It gives predictable sorting behavior,
+but the extra storage is a cost.
+
+00:06:44.660 --> 00:06:49.680
+For urgency ordering, the plan uses an
+array-backed binary min-heap.
+
+00:06:50.400 --> 00:06:54.526
+Incomplete tasks come first, though, and
+overdue status, priority, due date,
+
+00:06:54.526 --> 00:06:55.720
+creation time, and ID.
+
+00:06:56.180 --> 00:06:58.400
+Completed tasks are never treated as
+overdue.
+
+00:06:58.960 --> 00:07:03.139
+These rules need to be explicit because
+the word urgency by itself is too
+
+00:07:03.139 --> 00:07:03.940
+vague to test.
+
+00:07:04.520 --> 00:07:09.005
+A heap can inspect the next item in
+constant time and remove it in
+
+00:07:09.005 --> 00:07:10.160
+logarithmic time.
+
+00:07:10.160 --> 00:07:18.065
+However, building and draining the queue
+for a complete task list still
+
+00:07:18.065 --> 00:07:20.180
+takes O of n log n.
+
+00:07:20.740 --> 00:07:25.643
+I'm not claiming that it is
+asymptotically faster than merge sort,
+or that
+
+00:07:25.643 --> 00:07:29.420
+it produces a measured improvement in
+Android frame rate.
+
+00:07:29.960 --> 00:07:32.400
+The original persistence path uses
+Firebase.
+
+00:07:33.460 --> 00:07:36.852
+Boards are stored in the boards
+collection, and each board has a task
+
+00:07:36.852 --> 00:07:37.540
+subcollection.
+
+00:07:37.540 --> 00:07:42.285
+The read methods observe snapshots and
+map documents into the application
+
+00:07:42.285 --> 00:07:42.740
+models.
+
+00:07:43.140 --> 00:07:46.380
+The code also implements create, update,
+and delete operations.
+
+00:07:47.000 --> 00:07:50.779
+There is a real persistence layer, so
+the database enhancement should not
+
+00:07:50.779 --> 00:07:54.040
+describe the starting point as an
+application with no database.
+
+00:07:54.500 --> 00:07:57.320
+The missing piece is an implemented
+local Room workspace.
+
+00:07:58.020 --> 00:08:01.760
+There is consistency risk to review in
+the original cloud code,
+
+00:08:01.760 --> 00:08:06.249
+In addTask, writing the task and
+incrementing the boards task count are
+
+00:08:06.249 --> 00:08:08.020
+separate awaited operations.
+
+00:08:08.540 --> 00:08:12.392
+If the first succeeds and the second
+fails, the stored count can disagree
+
+00:08:12.392 --> 00:08:13.500
+with the actual task.
+
+00:08:13.980 --> 00:08:16.420
+Deletion also changes the task and count
+separately.
+
+00:08:17.340 --> 00:08:21.377
+The board deletion method retrieves the
+task delete, retrieves the task,
+
+00:08:21.377 --> 00:08:24.460
+deletes them one at a time, and then
+deletes the board.
+
+00:08:25.020 --> 00:08:28.835
+That sequence can be interrupted and the
+number of remote operations grow
+
+00:08:28.835 --> 00:08:29.880
+with the task count.
+
+00:08:29.880 --> 00:08:34.575
+These are reasons to review atomicity,
+recovery, and scale rather than
+
+00:08:34.575 --> 00:08:39.269
+assuming that separated successful calls
+always produce one consistent
+
+00:08:39.269 --> 00:08:39.940
+operation.
+
+00:08:41.060 --> 00:08:44.080
+These observations inform the local
+database design.
+
+00:08:44.740 --> 00:08:48.932
+They are not a claim that adding Room
+repairs the existing Firebase
+
+00:08:48.932 --> 00:08:49.620
+operations.
+
+00:08:50.060 --> 00:08:53.220
+The local and shared storage paths
+require their own validation.
+
+00:08:53.220 --> 00:08:57.683
+The original local database folder
+contains an empty placeholder for the
+
+00:08:57.683 --> 00:09:00.100
+database, entities, DAOs, and mappings.
+
+00:09:00.620 --> 00:09:04.100
+A folder named local is not evidence
+that local persistence works.
+
+00:09:04.620 --> 00:09:08.280
+These files provide a concrete starting
+point for the database enhancement.
+
+00:09:09.300 --> 00:09:14.472
+Enhancement plan was to implement Room
+entities for boards and tasks, data
+
+00:09:14.472 --> 00:09:15.520
+access objects,
+
+00:09:16.200 --> 00:09:20.009
+and for create, read, update, and delete
+operations in a repository that
+
+00:09:20.009 --> 00:09:22.020
+connects persistence to the interface.
+
+00:09:22.700 --> 00:09:27.300
+Each task should reference a valid board
+through a required foreign key.
+
+00:09:28.400 --> 00:09:31.460
+Deleting a board should actually cascade
+to its task.
+
+00:09:31.760 --> 00:09:36.104
+Creating a board with an optional first
+task should use a transaction so
+
+00:09:36.104 --> 00:09:38.940
+either both inserts succeed or neither
+remains.
+
+00:09:39.960 --> 00:09:44.424
+Task counts should be calculated from
+the stored task row rather than
+
+00:09:44.424 --> 00:09:46.300
+maintained as a second value.
+
+00:09:46.300 --> 00:09:50.447
+An index beginning with board ID
+supports queries within a board with a
+
+00:09:50.447 --> 00:09:52.900
+trade-off of extra storage and write
+work.
+
+00:09:54.460 --> 00:09:58.720
+Tasks and deletions should check both
+the board and task identifiers.
+
+00:09:59.520 --> 00:10:04.175
+Bound query parameters keep supplied
+value separate from SQL syntax while
+
+00:10:04.175 --> 00:10:08.320
+repository validation rejects invalid
+titles and oversized input.
+
+00:10:08.960 --> 00:10:12.703
+The scope is explicit on this device
+workspace alongside with existing
+
+00:10:12.703 --> 00:10:14.040
+shared board's workspace.
+
+00:10:14.040 --> 00:10:18.663
+Room does not replace all Firebase
+functionality and does not synchronize
+
+00:10:18.663 --> 00:10:20.500
+local records with Firestore.
+
+00:10:21.100 --> 00:10:25.023
+Making that separation visible avoids
+promising synchronization that has not
+
+00:10:25.023 --> 00:10:25.900
+been implemented.
+
+00:10:26.980 --> 00:10:31.605
+The migration example evolves a
+documented local version 1 test schema
+to
+
+00:10:31.605 --> 00:10:34.140
+version 2 while retaining existing rows.
+
+00:10:34.940 --> 00:10:38.485
+Because the original application has no
+active Room implementation, this is
+
+00:10:38.485 --> 00:10:41.840
+not a claim that the shipped database or
+Firebase record were migrated.
+
+00:10:42.540 --> 00:10:46.326
+Security requires reviewing the actual
+access rules as well as the
+
+00:10:46.326 --> 00:10:46.900
+interface.
+
+00:10:47.500 --> 00:10:50.907
+These supplied Firestore rules check
+whether the request is authenticated
+
+00:10:50.907 --> 00:10:53.520
+and whether the user is an owner or
+member of the board.
+
+00:10:53.920 --> 00:10:57.495
+That shows an intended access boundary
+that is needed for their validation,
+
+00:10:57.495 --> 00:10:59.020
+but it needs further validation.
+
+00:10:59.560 --> 00:11:03.365
+The helper reads an existing board
+document so new board creation and
+
+00:11:03.365 --> 00:11:05.460
+joining behavior needs careful review.
+
+00:11:05.460 --> 00:11:11.373
+This file also does not define access
+rules for users and errors collections
+
+00:11:11.373 --> 00:11:13.240
+used by the application.
+
+00:11:13.860 --> 00:11:19.094
+I have not verified that these are the
+rules deployed to the live Firebase
+
+00:11:19.094 --> 00:11:19.660
+project.
+
+00:11:21.000 --> 00:11:25.476
+For local storage, parameterized
+queries, validation, foreign keys, and
+
+00:11:25.476 --> 00:11:28.060
+backup exclusions address specific
+risks.
+
+00:11:28.640 --> 00:11:30.660
+They do not provide complete protection.
+
+00:11:30.660 --> 00:11:35.042
+Room does not automatically encrypt the
+database and the local workspace is
+
+00:11:35.042 --> 00:11:38.080
+available to anyone using the same app
+installation.
+
+00:11:38.760 --> 00:11:41.120
+It is not separated by Firebase account.
+
+00:11:42.000 --> 00:11:44.220
+Signing out of Firebase does not clear
+it.
+
+00:11:44.660 --> 00:11:47.900
+My security goal is to identify these
+boundaries and limitations accurately.
+
+00:11:48.720 --> 00:11:52.080
+Sensitive use cases would require
+additional controls and testing.
+
+00:11:52.820 --> 00:11:57.580
+Publishing the portfolio also requires
+excluding private configuration.
+
+00:11:57.580 --> 00:12:01.520
+Signing material and personal data from
+downloadable code.
+
+00:12:02.580 --> 00:12:07.580
+The original local unit test checks that
+2 plus 2 equals 4.
+
+00:12:07.760 --> 00:12:12.060
+It confirms a basic test setup but does
+not test task-management behavior.
+
+00:12:12.480 --> 00:12:16.086
+Enhancement plan therefore includes
+tests tied to actual requirements like
+
+00:12:16.086 --> 00:12:19.595
+input validation, state summaries,
+ordering rules, failure behavior, and
+
+00:12:19.595 --> 00:12:20.180
+persistence.
+
+00:12:21.000 --> 00:12:24.700
+The program outcomes connect to specific
+evidence.
+
+00:12:24.700 --> 00:12:28.402
+The architecture and database
+implementation support effective use of
+
+00:12:28.402 --> 00:12:29.260
+computing tools.
+
+00:12:29.660 --> 00:12:33.385
+The sorting rules, custom algorithms,
+and complexity analysis support
+
+00:12:33.385 --> 00:12:35.760
+algorithmic reasoning and design trade-
+offs.
+
+00:12:36.660 --> 00:12:41.268
+This review, the narratives, and the
+source explanations support
+
+00:12:41.268 --> 00:12:45.660
+professional communication, validation,
+sorry, communication.
+
+00:12:46.180 --> 00:12:50.409
+The validation access rules review and
+explicit privacy limitations support
+
+00:12:50.409 --> 00:12:51.480
+a security mindset.
+
+00:12:52.340 --> 00:12:56.193
+For collaboration and decision-making,
+my evidence includes instructor
+
+00:12:56.193 --> 00:12:58.560
+feedback and the changes made in
+responses.
+
+00:12:59.760 --> 00:13:03.560
+For example, my instructor asked for a
+clear presentation of my own work and
+
+00:13:03.560 --> 00:13:06.660
+the video recording’s audio and upload
+access to be corrected.
+
+00:13:06.920 --> 00:13:09.059
+[Closing sentence about a repository and
+professional team collaboration is
+
+00:13:09.059 --> 00:13:10.200
+unclear in the automated transcription.]

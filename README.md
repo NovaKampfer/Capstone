@@ -18,7 +18,7 @@ No framework build is needed. GitHub Actions deploys only `docs/`.
 Use Android Studio's JDK (17+), SDK 36 and the supplied Gradle wrapper. Add your own app/google-services.json privately; public downloads intentionally exclude it. Run `gradlew assembleDebug testDebugUnitTest`, then `gradlew connectedDebugAndroidTest` with an emulator. Do not commit Firebase configuration, SDK paths, signing keys or runtime databases. A build with configuration does not imply cloud authorization or shared-workspace validation.
 
 ## Before instructor submission
-The code-review recording URL is missing. Add the actual recording, verify corrected audio, embed it if supported and include a direct link. Test signed-out access. Review the first-person assessment. Full Firebase interaction and wider UI checks remain separate from the passing automated tests.
+The actual code-review recording is embedded at https://novakampfer.github.io/Capstone/#review with a direct MP4 link, captions and transcript. Review the complete audio and first-person assessment. The five-outcome rubric has been audited; Outcome 1 still needs stronger genuine collaboration evidence. The original plan proposed synchronization/account isolation that the delivered separate Room workspace does not provide. Full Firebase interaction and wider UI checks remain separate from the passing automated tests.
 
 ## Publishing
 The designated repository is NovaKampfer/Capstone. The user authorized making the initially empty private repository public for Pages. The workflow uses the official GitHub Pages actions. Existing custom domains must be preserved on future changes.

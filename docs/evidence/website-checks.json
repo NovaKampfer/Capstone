@@ -1,21 +1,21 @@
 {
-  "html_pages": 5,
-  "local_links_checked": 94,
+  "html_pages": 6,
+  "local_links_checked": 259,
   "source_targets_checked": 15,
   "downloads_verified": 7,
   "errors": [],
-  "recording": "Missing; access and audio cannot be verified",
-  "source_links": "All source links and live portfolio resources checked without authentication: 39 URLs returned HTTP 200; all 7 downloads matched SHA-256.",
+  "recording": "Local playback advanced from 0 to 15.88 seconds; pause via Space worked. Captions rendered. Full video/audio decode passed. Public playback verification follows deployment.",
+  "source_links": "15 linked source targets exist locally at the unchanged artifact snapshot; public HTTP checks follow deployment.",
   "responsive_viewports": [
     320,
     390,
     768,
     1440
   ],
-  "responsive_status": "All 5 pages checked at 320, 390, 768 and 1440 pixels: no horizontal document overflow (20 checks). Long filenames wrap; tables scroll within labeled regions.",
+  "responsive_status": "October 17: updated home, evidence, database narrative and new transcript checked at 320, 390, 768 and 1440 pixels without horizontal document overflow (16 checks). Other narrative pages retain October 16 checks.",
   "docx": "Supplied DOCX downloads are unchanged and ZIP-integrity checked. Re-render unavailable: LibreOffice not installed.",
   "keyboard": "Visible focus checked; activating Skip to content moved keyboard focus to main.",
-  "mobile_visual": "Home, database diagram and narrative views inspected in browser.",
-  "website_validation_date": "2026-10-16",
+  "mobile_visual": "Embedded player and captions visually inspected at 390 pixels.",
+  "website_validation_date": "2026-10-17",
   "public_http_report": "live-verification.json"
 }
