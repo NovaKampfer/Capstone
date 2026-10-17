@@ -98,6 +98,11 @@
       "final_url": "https://novakampfer.github.io/Capstone/assets/style.css"
     },
     {
+      "url": "https://novakampfer.github.io/Capstone/code-review-transcript.html",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/code-review-transcript.html"
+    },
+    {
       "url": "https://novakampfer.github.io/Capstone/databases-narrative.html",
       "status": 200,
       "final_url": "https://novakampfer.github.io/Capstone/databases-narrative.html"
@@ -185,9 +190,19 @@
       "final_url": "https://novakampfer.github.io/Capstone/evidence/final-changes.json"
     },
     {
+      "url": "https://novakampfer.github.io/Capstone/evidence/live-verification.json",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/live-verification.json"
+    },
+    {
       "url": "https://novakampfer.github.io/Capstone/evidence/provenance.json",
       "status": 200,
       "final_url": "https://novakampfer.github.io/Capstone/evidence/provenance.json"
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/evidence/recording-checks.json",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/evidence/recording-checks.json"
     },
     {
       "url": "https://novakampfer.github.io/Capstone/evidence/sql-rerun.log",
@@ -204,6 +219,24 @@
       "status": 200,
       "final_url": "https://novakampfer.github.io/Capstone/index.html",
       "has_expected_content": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/media/code-review-poster.jpg",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/media/code-review-poster.jpg",
+      "sha256_match": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/media/code-review.en.vtt",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/media/code-review.en.vtt",
+      "sha256_match": true
+    },
+    {
+      "url": "https://novakampfer.github.io/Capstone/media/matthew-baerg-code-review.mp4",
+      "status": 200,
+      "final_url": "https://novakampfer.github.io/Capstone/media/matthew-baerg-code-review.mp4",
+      "sha256_match": true
     }
   ],
   "passed": true

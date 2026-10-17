@@ -61,7 +61,22 @@
   },
   "transcription": "Local faster-whisper small.en generated speech segments from 0.69 to 790.2 seconds. Edited automated transcript and captions; unclear final sentence labeled. Not a certified verbatim transcript.",
   "privacy_review": "28 sampled frames inspected across the full recording, plus full-resolution source frames; observed Android Studio source walkthrough with no credential or private-record content in inspected frames. Not a frame-by-frame audit.",
-  "public_access": "Pending deployment verification",
+  "public_access": {
+    "unauthenticated": true,
+    "mp4_status": 200,
+    "mime_type": "video/mp4",
+    "sha256_matches_local": true,
+    "range_request": {
+      "status": 206,
+      "content_range": "bytes 10000000-10001023/17001989",
+      "bytes_received": 1024
+    },
+    "captions_status": 200,
+    "transcript_status": 200,
+    "browser_playback": "Loaded 790.6s, 1280x720, readyState 4. Played beyond 19 seconds; Space paused and ArrowRight sought forward to 27.50 seconds. Captions visibly rendered.",
+    "pages_workflow": "https://github.com/NovaKampfer/Capstone/actions/runs/39074671336",
+    "publication_commit": "6c6f8437fd1d1da22659c2f0d47dd4cf6938e29d"
+  },
   "verification_date": "2026-10-17",
   "limitations": [
     "Author should listen through the entire recording to confirm microphone quality; no complete human listening review is claimed.",

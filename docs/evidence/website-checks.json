@@ -4,8 +4,8 @@
   "source_targets_checked": 15,
   "downloads_verified": 7,
   "errors": [],
-  "recording": "Local playback advanced from 0 to 15.88 seconds; pause via Space worked. Captions rendered. Full video/audio decode passed. Public playback verification follows deployment.",
-  "source_links": "15 linked source targets exist locally at the unchanged artifact snapshot; public HTTP checks follow deployment.",
+  "recording": "Public MP4 and captions returned HTTP 200 with matching SHA-256; byte-range seeking returned 206. Live browser playback, pause, forward seek and visible captions verified. See recording-checks.json for audio limits.",
+  "source_links": "45 public URLs checked without authentication, including all linked source targets. All 7 downloads and 3 media assets matched SHA-256.",
   "responsive_viewports": [
     320,
     390,
